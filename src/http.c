@@ -307,13 +307,15 @@ void http_parser_init(http_parser_t *parser)
 
     parser->req.field_count = 2;
     parser->req.fields[0].valid = parser->req.fields[1].valid = 0;
+
+    parser->initialized = 1;
 }
 
 void http_parser_free(http_parser_t *parser)
 {
     size_t i;
 
-    if (!parser)
+    if (!parser || !parser->initialized)
         return;
 
     for (i = 0; i < parser->req.field_count; i++) {
@@ -322,7 +324,8 @@ void http_parser_free(http_parser_t *parser)
             free(parser->req.fields[i].value);
         }
     }
-    free(parser->req.fields);
+    if (parser->req.fields)
+        free(parser->req.fields);
     if (parser->req.path)
         free(parser->req.path);
     if (parser->req.params)

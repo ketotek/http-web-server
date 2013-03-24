@@ -142,6 +142,8 @@ static struct connection *connection_create(int sockfd)
     conn->static_transf = 0;
     conn->process_output = 0;
 
+    memset(&conn->parser, 0, sizeof(conn->parser));
+
     return conn;
 }
 

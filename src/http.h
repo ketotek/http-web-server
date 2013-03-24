@@ -36,6 +36,7 @@ typedef struct http_parser {
     http_request_t req;
 
     char *parse_ptr;
+    int initialized;
 } http_parser_t;
 
 
