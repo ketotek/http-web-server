@@ -4,14 +4,14 @@
 #include <string.h>
 
 enum HTTP_METHOD {
-		HTTP_GET = 0,
-		HTTP_PUT,
-		HTTP_POST,
-		HTTP_METHOD_COUNT
+    HTTP_GET = 0,
+    HTTP_PUT,
+    HTTP_POST,
+    HTTP_METHOD_COUNT
 };
 
 enum HTTP_STATUS {
-		HTTP_STATUS_OK = 200
+    HTTP_STATUS_OK = 200
 };
 
 typedef struct http_header_field {
@@ -30,12 +30,12 @@ typedef struct http_request {
 
 
 typedef struct http_parser {
-		const char *data;
-		size_t len;
+    const char *data;
+    size_t len;
 
-		http_request_t req;
+    http_request_t req;
 
-		char *parse_ptr;
+    char *parse_ptr;
 } http_parser_t;
 
 

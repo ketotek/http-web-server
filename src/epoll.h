@@ -8,68 +8,70 @@
 
 static inline int http_epoll_create()
 {
-	return epoll_create(1);
+    return epoll_create(1);
 }
 
 static inline int http_epoll_add_fd_in(int epollfd, int fd)
 {
-	struct epoll_event ev = {
-		.events = EPOLLIN,
-		.data.fd = fd
-	};
+    struct epoll_event ev = {
+        .events = EPOLLIN,
+        .data.fd = fd
+    };
 
-	return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
+    return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 static inline int http_epoll_add_ptr_in(int epollfd, int fd, void *ptr)
 {
-	struct epoll_event ev = {
-		.events = EPOLLIN,
-		.data.ptr = ptr
-	};
+    struct epoll_event ev = {
+        .events = EPOLLIN,
+        .data.ptr = ptr
+    };
 
-	return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
+    return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 static inline int http_epoll_add_ptr_out(int epollfd, int fd, void *ptr)
 {
-	struct epoll_event ev = {
-		.events = EPOLLOUT,
-		.data.ptr = ptr
-	};
+    struct epoll_event ev = {
+        .events = EPOLLOUT,
+        .data.ptr = ptr
+    };
 
-	return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
+    return epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 static inline int http_epoll_update_ptr_out(int epollfd, int fd, void *ptr)
 {
-	struct epoll_event ev = {
-		.events = EPOLLOUT,
-		.data.ptr = ptr
-	};
+    struct epoll_event ev = {
+        .events = EPOLLOUT,
+        .data.ptr = ptr
+    };
 
-	return epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
+    return epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
 static inline int http_epoll_update_ptr_in(int epollfd, int fd, void *ptr)
 {
-	struct epoll_event ev = {
-		.events = EPOLLIN,
-		.data.ptr = ptr
-	};
+    struct epoll_event ev = {
+        .events = EPOLLIN,
+        .data.ptr = ptr
+    };
 
-	return epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
+    return epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
 static inline int http_epoll_remove_ptr(int epollfd, int fd, void *ptr)
 {
-	return epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);
+    return epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);
 }
 
 static inline int http_epoll_wait_event(int epollfd, struct epoll_event *event)
 {
-	return epoll_wait(epollfd, event, 1, -1);
+    return epoll_wait(epollfd, event, 1, -1);
 }
 
 #endif
+
+/* vim: set ts=4 sw=4 tw=80 et :*/
 
