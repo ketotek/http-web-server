@@ -1,6 +1,6 @@
 
 CFLAGS=-Wall -ggdb
-LDFLAGS=-laio -lbsd
+LDFLAGS=-laio -lbsd -lcap
 
 all: server
 
@@ -8,5 +8,5 @@ server: server.o http.o sock.o
 
 .PHONY: clean
 clean:
-	rm *.o server test
+	rm *.o server
 

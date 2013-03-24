@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <libaio.h>
-#include <pthread.h>
+#include <sys/capability.h>
 
 #include "epoll.h"
 #include "sock.h"
@@ -591,12 +591,41 @@ static void parse_options(int argc, char *argv[])
 	}
 }
 
+static int check_permissions()
+{
+	cap_t caps;
+	cap_flag_value_t flag;
+	int rc, ret;
+
+	
+	caps = cap_get_proc();
+	rc = cap_get_flag(caps, CAP_NET_BIND_SERVICE, CAP_PERMITTED, &flag);
+	ret = 0;
+	if ((rc != 0 || flag != CAP_SET) && server_port < 1024) {
+		ret = 1;
+		fprintf(stderr, "CAP_NET_BIND_SERVICE capability missing, "
+				"but required for using port number %d\n", server_port);
+	}
+
+	cap_free(caps);
+
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 	struct epoll_event rev;
 	int rc;
 
+	if (getuid() == 0) {
+		fprintf(stderr, "You should not run this as root!\n");
+		exit(EXIT_FAILURE);
+	}
+
 	parse_options(argc, argv);
+
+	if (check_permissions())
+		exit(EXIT_FAILURE);
 
 	epollfd = http_epoll_create();
 	ASSERT(epollfd > 0);
