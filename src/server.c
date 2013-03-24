@@ -21,6 +21,9 @@
 #define DOCUMENT_ROOT "./"
 #define ADDR_BUFSIZ 64
 
+static char *document_root;
+static unsigned short server_port = PORT;
+
 static int epollfd;
 static int event_fd;
 static int listener;
@@ -98,6 +101,13 @@ static char *make_file_path(char *root, char *resource)
 	}
 	
 	return fp;
+}
+
+static char *get_document_root()
+{
+	if (!document_root)
+		return DOCUMENT_ROOT;
+	return document_root;
 }
 
 static void make_http_response(char *buffer, size_t code, size_t length)
@@ -359,9 +369,9 @@ static void handle_client_request(struct connection *conn)
 	}
 	dlog(LOG_INFO, "Parsed url: %s\n", req->path);
 	dlog(LOG_INFO, "Parsed params: %s\n", req->params);
-		
-	req_file = make_file_path(DOCUMENT_ROOT, req->path);
-	if (!file_exists(req_file)) {
+
+	req_file = make_file_path(get_document_root(), req->path);
+	if (!file_exists(req_file) || strlen(req->path) == 1) {
 		
 		make_http_response(conn->send_buffer, 404, 0);
 		conn->send_len = strlen(conn->send_buffer);
@@ -542,10 +552,51 @@ static void next_data(struct connection *conn)
 	}
 }
 
+static void free_resources()
+{
+	if (document_root)
+		free(document_root);
+
+	close(listener);
+	close(event_fd);
+	close(epollfd);
+}
+
+static void print_usage(int argc, char *argv[])
+{
+	fprintf(stderr, "usage: %s [-r document_root] [-p port] [-h]\n", argv[0]);
+	fprintf(stderr, "\t-r\t\tSet document root\n");
+	fprintf(stderr, "\t-p\t\tSet server port number\n");
+	fprintf(stderr, "\t-h\t\tDisplay this information\n");
+}
+
+static void parse_options(int argc, char *argv[])
+{
+	int opt;
+
+	while ((opt = getopt(argc, argv, "r:p:h")) != -1) {
+		switch (opt) {
+			case 'r':
+				document_root = strdup(optarg);
+				break;
+			case 'p':
+				server_port = atoi(optarg);
+				ASSERT(server_port > 0 && server_port < 65536);
+				break;
+			case 'h':
+			default:
+				print_usage(argc, argv);
+				exit(EXIT_SUCCESS);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	struct epoll_event rev;
 	int rc;
+
+	parse_options(argc, argv);
 
 	epollfd = http_epoll_create();
 	ASSERT(epollfd > 0);
@@ -553,7 +604,7 @@ int main(int argc, char *argv[])
 	event_fd = eventfd(0, 0);
 	ASSERT(event_fd > 0);
 
-	listener = sock_create_listener(PORT);
+	listener = sock_create_listener(server_port);
 
 	rc = http_epoll_add_fd_in(epollfd, listener);
 	ASSERT(rc == 0);
@@ -586,6 +637,8 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+
+	free_resources();
 
 	return 0;
 }
