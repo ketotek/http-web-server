@@ -390,7 +390,8 @@ static void handle_client_request(struct connection *conn)
         make_http_response(conn->send_buffer, 200, conn->bytes_total);
         conn->send_len = strlen(conn->send_buffer);
 
-        send_message(conn);
+        if (!send_message(conn))
+            goto end;
 
         conn->static_transf = 1;
 
@@ -405,7 +406,9 @@ static void handle_client_request(struct connection *conn)
 
         make_http_response(conn->send_buffer, 200, conn->recv_len);
         conn->send_len = strlen(conn->send_buffer);
-        send_message(conn);
+        
+        if (!send_message(conn))
+            goto end;
 
         conn->process_output = 1;
         conn->bytes_total = conn->recv_len;
@@ -417,8 +420,10 @@ static void handle_client_request(struct connection *conn)
     dlog(LOG_INFO, "Sending dynamic file %s\n", req_file);
     make_http_response(conn->send_buffer, 200, conn->bytes_total);
     conn->send_len = strlen(conn->send_buffer);
-    send_message(conn);
-
+    
+    if (!send_message(conn))
+        goto end;
+    
     send_dynamic_file(conn, req_file);
 
 end:
@@ -514,9 +519,10 @@ static void next_data(struct connection *conn)
 
         sent = send_message(conn);
 
-        if (sent == 0)
+        if (sent == 0) {
             dlog(LOG_CRIT, "Sent 0 bytes\n");
-
+            return;
+        }
         conn->bytes_sent += sent;
         if (conn->bytes_sent == conn->bytes_total) {
             finalize(conn);
@@ -542,7 +548,10 @@ static void next_data(struct connection *conn)
             dlog(LOG_INFO, "continue reading\n");
         }
 
-        send_message(conn);
+        if (!send_message(conn)) {
+            dlog(LOG_CRIT, "Sent 0 bytes\n");
+            return;
+        }
 
         conn->bytes_sent += conn->send_len;
         if (conn->bytes_sent == conn->bytes_total) {
