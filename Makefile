@@ -9,7 +9,7 @@ setbindcap: build
 	sudo setcap cap_net_bind_service=+ep src/server
 
 run: src/server
-	sudo src/server
+	src/server
 
 .PHONY:
 clean:
