@@ -227,6 +227,10 @@ static int add_field(http_parser_t *parser)
     if (field == parser->req.field_count) {
         size_t newsz = 2 * parser->req.field_count * sizeof(http_header_field_t);
 
+        
+        /* In case req.field_count == 0 */
+        newsz = newsz == 0 ? 2 : newsz;
+        
         parser->req.field_count *= 2;
         parser->req.fields = realloc(parser->req.fields, newsz);
         memset(parser->req.fields + field, 0, newsz / 2);
